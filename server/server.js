@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const attendanceRoutes = require('./routes/attendance');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json({ limit: '5mb' })); // allow base64 profile pictures
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ success: true, message: 'Dayflow API running' }));
