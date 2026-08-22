@@ -21,7 +21,7 @@ const updateMe = async (req, res) => {
     const isAdmin = req.user.role === 'admin';
 
     // Fields any user can update on their own profile
-    const allowedEmployee = ['phone', 'address', 'profilePicture', 'jobRole'];
+    const allowedEmployee = ['phone', 'address', 'profilePicture', 'jobRole', 'department', 'jobTitle'];
     // Additional fields only admin can update on their own record
     const allowedAdmin = [...allowedEmployee, 'name', 'department', 'jobTitle', 'jobRole', 'salary', 'role', 'employeeId'];
 

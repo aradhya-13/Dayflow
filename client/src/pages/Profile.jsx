@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
-const EMPLOYEE_EDITABLE = ['phone', 'address', 'jobRole'];
+const EMPLOYEE_EDITABLE = ['phone', 'address', 'jobRole', 'department', 'jobTitle'];
 const ADMIN_EDITABLE    = ['name', 'employeeId', 'department', 'jobTitle', 'jobRole', 'salary', 'role', 'phone', 'address'];
 
 const JOB_ROLES = [
@@ -201,7 +201,7 @@ export default function Profile() {
 
       {!isAdmin && (
         <p className="text-xs text-gray-400 px-1">
-          You can update phone, address, job role, and profile photo. Contact HR to change other details.
+          You can update phone, address, department, job title, job role, and profile photo. Contact HR to change other details.
         </p>
       )}
     </div>
