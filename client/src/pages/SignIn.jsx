@@ -55,7 +55,7 @@ export default function SignIn() {
             ))}
           </div>
         </div>
-        <p className="text-blue-300 text-xs">© 2024 Dayflow HRMS</p>
+        <p className="text-blue-300 text-xs">©Dayflow HRMS</p>
       </div>
 
       {/* Right panel */}

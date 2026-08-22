@@ -19,7 +19,10 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Attendance from './pages/Attendance';
+import Leaves from './pages/Leaves';
+import Payroll from './pages/Payroll';
 import Navbar from './components/Navbar';
+import Toast from './components/ui/Toast';
 
 // Wraps routes that require login. Pass adminOnly to restrict to admins.
 function PrivateRoute({ adminOnly = false }) {
@@ -39,6 +42,7 @@ function PrivateRoute({ adminOnly = false }) {
 export default function App() {
   return (
     <AuthProvider>
+      <Toast />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/signin" replace />} />
@@ -51,6 +55,8 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
             {/* Teammates: add employee-level pages here */}
             <Route path="/attendance" element={<Attendance />} />
+            <Route path="/leaves" element={<Leaves />} />
+            <Route path="/payroll" element={<Payroll />} />
           </Route>
 
           {/* Admin-only routes */}

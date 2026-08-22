@@ -1,5 +1,4 @@
 require('dotenv').config();
-console.log('MONGO_URI:', process.env.MONGO_URI);
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -7,6 +6,9 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const attendanceRoutes = require('./routes/attendance');
+const leaveRoutes   = require('./routes/leaves');
+const payrollRoutes = require('./routes/payroll');
+const adminRoutes   = require('./routes/admin');
 
 const app = express();
 
@@ -17,6 +19,9 @@ app.use(express.json({ limit: '5mb' })); // allow base64 profile pictures
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/leaves',   leaveRoutes);
+app.use('/api/payroll',  payrollRoutes);
+app.use('/api/admin',    adminRoutes);
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ success: true, message: 'Dayflow API running' }));

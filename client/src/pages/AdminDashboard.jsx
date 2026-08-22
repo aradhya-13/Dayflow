@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import {
+  BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -13,16 +21,22 @@ export default function AdminDashboard() {
       .then(({ data }) => setEmployees(data.data))
       .catch(() => setError('Failed to load employees'))
       .finally(() => setLoading(false));
+
+    api.get('/admin/stats')
+      .then(({ data }) => setStats(data.data))
+      .finally(() => setStatsLoading(false));
+
+    api.get('/admin/analytics')
+      .then(({ data }) => setAnalytics(data.data))
+      .finally(() => setAnalyticsLoading(false));
   }, []);
 
-  const adminCount    = employees.filter(e => e.role === 'admin').length;
-  const employeeCount = employees.filter(e => e.role === 'employee').length;
-
-  const stats = [
-    { label: 'Total Employees', value: employees.length, color: 'from-blue-500 to-blue-600', icon: '👥' },
-    { label: 'Admins / HR', value: adminCount, color: 'from-purple-500 to-purple-600', icon: '🛡️' },
-    { label: 'Staff Members', value: employeeCount, color: 'from-emerald-500 to-teal-600', icon: '💼' },
-  ];
+  const statCards = stats ? [
+    { label: 'Total Employees', value: stats.totalEmployees, color: 'from-blue-500 to-blue-600', icon: '👥' },
+    { label: 'Pending Leaves', value: stats.pendingLeaves, color: 'from-amber-500 to-orange-500', icon: '📋' },
+    { label: 'Present Today', value: stats.presentToday, color: 'from-emerald-500 to-teal-600', icon: '✅' },
+    { label: 'Absent Today', value: stats.absentToday, color: 'from-red-500 to-red-600', icon: '❌' },
+  ] : [];
 
   return (
     <div className="space-y-6">
@@ -33,10 +47,11 @@ export default function AdminDashboard() {
         <p className="text-slate-400 text-sm">Here's an overview of your organization</p>
       </div>
 
-      {/* Stats */}
-      {!loading && !error && (
-        <div className="grid grid-cols-3 gap-4">
-          {stats.map(({ label, value, color, icon }) => (
+      {/* Stats — 4 cards from /api/admin/stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statsLoading
+          ? [1,2,3,4].map(i => <div key={i} className="bg-white rounded-xl border border-gray-100 p-5 h-24 animate-pulse" />)
+          : statCards.map(({ label, value, color, icon }) => (
             <div key={label} className="card p-5">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg shadow-sm mb-3`}>
                 {icon}
@@ -44,9 +59,9 @@ export default function AdminDashboard() {
               <p className="text-2xl font-bold text-gray-900">{value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{label}</p>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        }
+      </div>
 
       {/* Employee table */}
       <div className="card">
@@ -136,6 +151,64 @@ export default function AdminDashboard() {
         <PlaceholderCard title="Attendance Overview" hint="Attendance module" />
         <PlaceholderCard title="Leave Approvals" hint="Leave module" />
       </div>
+
+      {/* Analytics */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Analytics</h3>
+        <div className="grid md:grid-cols-3 gap-4">
+
+          {/* Leaves by Department */}
+          <div className="card p-5">
+            <p className="text-sm font-semibold text-gray-700 mb-4">Approved Leaves by Department</p>
+            {analyticsLoading ? <ChartSkeleton /> : !analytics?.leavesByDepartment?.length ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={analytics.leavesByDepartment} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="department" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#6366f1" radius={[4,4,0,0]} name="Leaves" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Attendance Trend */}
+          <div className="card p-5">
+            <p className="text-sm font-semibold text-gray-700 mb-4">Attendance — Last 7 Days</p>
+            {analyticsLoading ? <ChartSkeleton /> : !analytics?.attendanceTrend?.length ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={analytics.attendanceTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={d => d.slice(5)} />
+                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <Tooltip labelFormatter={d => `Date: ${d}`} />
+                  <Legend iconSize={10} />
+                  <Line type="monotone" dataKey="presentCount" stroke="#16a34a" strokeWidth={2} dot={false} name="Present" />
+                  <Line type="monotone" dataKey="absentCount"  stroke="#dc2626" strokeWidth={2} dot={false} name="Absent" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Payroll by Department */}
+          <div className="card p-5">
+            <p className="text-sm font-semibold text-gray-700 mb-4">Payroll Cost by Department (This Month)</p>
+            {analyticsLoading ? <ChartSkeleton /> : !analytics?.payrollByDepartment?.length ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={analytics.payrollByDepartment} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="department" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={v => `Rs.${v.toLocaleString()}`} />
+                  <Bar dataKey="totalNetSalary" fill="#f59e0b" radius={[4,4,0,0]} name="Net Salary" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
@@ -148,6 +221,19 @@ function PlaceholderCard({ title, hint }) {
       <div className="mt-4 space-y-2">
         {[1,2].map(i => <div key={i} className="h-8 bg-gray-200/60 rounded-lg animate-pulse" />)}
       </div>
+    </div>
+  );
+}
+
+function ChartSkeleton() {
+  return <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />;
+}
+
+function EmptyChart() {
+  return (
+    <div className="h-48 flex flex-col items-center justify-center text-gray-400">
+      <p className="text-2xl mb-2">📊</p>
+      <p className="text-xs">No data yet</p>
     </div>
   );
 }

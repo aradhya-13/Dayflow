@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
     address: { type: String, trim: true, default: '' },
     profilePicture: { type: String, default: '' }, // URL or base64
     salary: { type: Number, default: 0 }, // only exposed to admin
+    // Leave balances (reset annually)
+    sickLeaveBalance:   { type: Number, default: 6 },
+    casualLeaveBalance: { type: Number, default: 6 },
+    paidLeaveBalance:   { type: Number, default: 12 },
   },
   { timestamps: true }
 );

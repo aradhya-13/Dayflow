@@ -23,6 +23,7 @@ export default function Navbar() {
     { to: '/admin', label: 'Dashboard', icon: '⊞' },
     { to: '/attendance', label: 'Attendance', icon: '◷' },
     { to: '/leaves', label: 'Approvals', icon: '◈' },
+    { to: '/payroll', label: 'Payroll', icon: '◎' },
   ];
 
   const links = user?.role === 'admin' ? adminLinks : employeeLinks;

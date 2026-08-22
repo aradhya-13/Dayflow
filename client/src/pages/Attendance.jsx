@@ -2,6 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
+function exportAttendanceCSV(records) {
+  const header = ['Employee Name','Employee ID','Date','Check In','Check Out','Status','Hours Worked'];
+  const rows = records.map(r => [r.employeeName || '', r.employeeId || '', r.date, r.checkIn || '', r.checkOut || '', r.status, r.hoursWorked || '']);
+  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `attendance_export_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
@@ -331,11 +342,19 @@ function AdminAttendance() {
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">Sorted by date, newest first</p>
           </div>
-          {!loading && (
+          <div className="flex items-center gap-3">
+            {!loading && records.length > 0 && (
+              <button onClick={() => exportAttendanceCSV(records)}
+                className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 font-medium">
+                Export CSV
+              </button>
+            )}
+            {!loading && (
             <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">
               {records.length} records
             </span>
-          )}
+            )}
+          </div>
         </div>
 
         {loading && (
