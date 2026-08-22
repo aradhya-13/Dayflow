@@ -21,9 +21,9 @@ const updateMe = async (req, res) => {
     const isAdmin = req.user.role === 'admin';
 
     // Fields any user can update on their own profile
-    const allowedEmployee = ['phone', 'address', 'profilePicture'];
+    const allowedEmployee = ['phone', 'address', 'profilePicture', 'jobRole'];
     // Additional fields only admin can update on their own record
-    const allowedAdmin = [...allowedEmployee, 'name', 'department', 'jobTitle', 'salary', 'role', 'employeeId'];
+    const allowedAdmin = [...allowedEmployee, 'name', 'department', 'jobTitle', 'jobRole', 'salary', 'role', 'employeeId'];
 
     const permitted = isAdmin ? allowedAdmin : allowedEmployee;
     permitted.forEach((field) => {
@@ -64,7 +64,7 @@ const updateUserById = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const editable = ['name', 'phone', 'address', 'profilePicture', 'department', 'jobTitle', 'salary', 'role'];
+    const editable = ['name', 'phone', 'address', 'profilePicture', 'department', 'jobTitle', 'jobRole', 'salary', 'role'];
     editable.forEach((field) => {
       if (req.body[field] !== undefined) user[field] = req.body[field];
     });

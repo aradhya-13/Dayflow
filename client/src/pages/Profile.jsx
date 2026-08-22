@@ -2,22 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
-// Fields any user can edit on their own profile
-const EMPLOYEE_EDITABLE = ['phone', 'address'];
-// Fields only admin can edit (when viewing another employee or their own)
-const ADMIN_EDITABLE = ['name', 'employeeId', 'department', 'jobTitle', 'salary', 'role', 'phone', 'address'];
+const EMPLOYEE_EDITABLE = ['phone', 'address', 'jobRole'];
+const ADMIN_EDITABLE    = ['name', 'employeeId', 'department', 'jobTitle', 'jobRole', 'salary', 'role', 'phone', 'address'];
 
-// All display fields (read-only for employee unless in editable list above)
+const JOB_ROLES = [
+  '', 'Software Engineer', 'Senior Software Engineer', 'Frontend Developer',
+  'Backend Developer', 'Full Stack Developer', 'DevOps Engineer',
+  'Data Analyst', 'Data Scientist', 'Product Manager', 'Project Manager',
+  'UI/UX Designer', 'Graphic Designer', 'HR Manager', 'HR Executive',
+  'Finance Manager', 'Accountant', 'Marketing Manager', 'Sales Executive',
+  'Business Analyst', 'QA Engineer', 'Team Lead', 'Engineering Manager',
+  'CTO', 'CEO', 'Intern', 'Other',
+];
+
 const ALL_FIELDS = [
-  { key: 'employeeId', label: 'Employee ID' },
-  { key: 'name', label: 'Full Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'role', label: 'Role' },
-  { key: 'department', label: 'Department' },
-  { key: 'jobTitle', label: 'Job Title' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'address', label: 'Address' },
-  { key: 'salary', label: 'Salary (admin only)', adminOnly: true },
+  { key: 'employeeId', label: 'Employee ID',  icon: '🪪' },
+  { key: 'name',       label: 'Full Name',     icon: '👤' },
+  { key: 'email',      label: 'Email',         icon: '✉️' },
+  { key: 'role',       label: 'System Role',   icon: '🛡️' },
+  { key: 'department', label: 'Department',    icon: '🏢' },
+  { key: 'jobRole',    label: 'Job Role',      icon: '🎯', type: 'select', adminOnly: false },
+  { key: 'jobTitle',   label: 'Job Title',     icon: '💼' },
+  { key: 'phone',      label: 'Phone',         icon: '📱' },
+  { key: 'address',    label: 'Address',       icon: '📍' },
+  { key: 'salary',     label: 'Salary',        icon: '💰', adminOnly: true },
 ];
 
 export default function Profile() {
@@ -25,10 +33,10 @@ export default function Profile() {
   const isAdmin = authUser?.role === 'admin';
 
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState({});
+  const [form, setForm]       = useState({});
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState('');
   const [success, setSuccess] = useState('');
   const [preview, setPreview] = useState('');
 
@@ -42,36 +50,27 @@ export default function Profile() {
 
   const editableKeys = isAdmin ? ADMIN_EDITABLE : EMPLOYEE_EDITABLE;
 
-  const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  };
+  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handlePicture = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result);
-      setForm((f) => ({ ...f, profilePicture: reader.result }));
-    };
+    reader.onloadend = () => { setPreview(reader.result); setForm(f => ({ ...f, profilePicture: reader.result })); };
     reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    setError('');
-    setSuccess('');
+    setSaving(true); setError(''); setSuccess('');
     try {
-      // Build payload with only editable fields + profilePicture
       const payload = {};
-      editableKeys.forEach((k) => { if (form[k] !== undefined) payload[k] = form[k]; });
+      editableKeys.forEach(k => { if (form[k] !== undefined) payload[k] = form[k]; });
       payload.profilePicture = form.profilePicture || '';
-
       const { data } = await api.put('/users/me', payload);
       setProfile(data.data);
       updateUser({ ...authUser, ...data.data });
       setEditing(false);
-      setSuccess('Profile updated');
+      setSuccess('Profile updated successfully');
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed');
     } finally {
@@ -79,83 +78,130 @@ export default function Profile() {
     }
   };
 
-  if (!profile) return <p className="text-gray-400 text-sm">Loading…</p>;
+  if (!profile) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-center">
+        <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm text-gray-400">Loading profile…</p>
+      </div>
+    </div>
+  );
+
+  const initials = profile.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '??';
 
   return (
-    <div className="max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">My Profile</h2>
-        {!editing ? (
-          <button
-            onClick={() => { setEditing(true); setSuccess(''); }}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            Edit
-          </button>
-        ) : (
-          <div className="flex gap-3">
-            <button onClick={() => { setEditing(false); setForm(profile); setPreview(profile.profilePicture || ''); }} className="text-sm text-gray-500 hover:underline">Cancel</button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-            >
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {error && <p className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">{error}</p>}
-      {success && <p className="text-green-600 text-sm mb-4 bg-green-50 p-2 rounded">{success}</p>}
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        {/* Profile picture */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-2xl">
-            {preview
-              ? <img src={preview} alt="avatar" className="w-full h-full object-cover" />
-              : profile.name?.[0]?.toUpperCase()}
-          </div>
-          {editing && (
-            <div>
-              <label className="text-xs text-blue-600 cursor-pointer hover:underline">
-                Change photo
-                <input type="file" accept="image/*" className="hidden" onChange={handlePicture} />
-              </label>
-              <p className="text-xs text-gray-400">JPG, PNG, max ~500 KB</p>
+    <div className="max-w-2xl space-y-5">
+      {/* Header card */}
+      <div className="card p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
+                {preview
+                  ? <img src={preview} alt="avatar" className="w-full h-full object-cover" />
+                  : initials}
+              </div>
+              {editing && (
+                <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border border-gray-200 flex items-center justify-center cursor-pointer shadow-sm hover:bg-gray-50 transition-colors">
+                  <span className="text-xs">✏️</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePicture} />
+                </label>
+              )}
             </div>
-          )}
-        </div>
-
-        {/* Fields */}
-        <div className="grid gap-4">
-          {ALL_FIELDS.filter((f) => !f.adminOnly || isAdmin).map(({ key, label }) => {
-            const isEditable = editing && editableKeys.includes(key);
-            return (
-              <div key={key} className="grid grid-cols-3 gap-2 items-start">
-                <span className="text-xs text-gray-400 pt-2">{label}</span>
-                {isEditable ? (
-                  <input
-                    name={key}
-                    value={form[key] ?? ''}
-                    onChange={handleChange}
-                    className="col-span-2 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <span className="col-span-2 text-sm text-gray-800 py-1.5">
-                    {key === 'salary' ? (profile[key] ? `$${profile[key].toLocaleString()}` : '—') : profile[key] || '—'}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{profile.name}</h2>
+              <p className="text-sm text-gray-500">{profile.jobTitle || 'No title'} · {profile.department || 'No department'}</p>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                  profile.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {profile.role}
+                </span>
+                {profile.jobRole && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-teal-100 text-teal-700">
+                    {profile.jobRole}
                   </span>
                 )}
               </div>
-            );
-          })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!editing ? (
+              <button onClick={() => { setEditing(true); setSuccess(''); }} className="btn-secondary">
+                Edit Profile
+              </button>
+            ) : (
+              <>
+                <button onClick={() => { setEditing(false); setForm(profile); setPreview(profile.profilePicture || ''); }} className="btn-secondary">
+                  Cancel
+                </button>
+                <button onClick={handleSave} disabled={saving} className="btn-primary">
+                  {saving ? 'Saving…' : 'Save changes'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+          <span>⚠</span> {error}
+        </div>
+      )}
+      {success && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl">
+          <span>✓</span> {success}
+        </div>
+      )}
+
+      {/* Fields */}
+      <div className="card divide-y divide-gray-50">
+        {ALL_FIELDS.filter(f => !f.adminOnly || isAdmin).map(({ key, label, icon, type }) => {
+          const isEditable = editing && editableKeys.includes(key);
+          return (
+            <div key={key} className="flex items-center gap-4 px-6 py-4">
+              <span className="text-lg w-6 flex-shrink-0">{icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
+                {isEditable ? (
+                  type === 'select' ? (
+                    <select
+                      name={key}
+                      value={form[key] ?? ''}
+                      onChange={handleChange}
+                      className="input-field py-1.5 text-sm"
+                    >
+                      <option value="">— Select job role —</option>
+                      {JOB_ROLES.filter(r => r !== '').map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      name={key}
+                      value={form[key] ?? ''}
+                      onChange={handleChange}
+                      className="input-field py-1.5 text-sm"
+                    />
+                  )
+                ) : (
+                  <p className="text-sm text-gray-800 font-medium truncate">
+                    {key === 'salary'
+                      ? (profile[key] ? `$${profile[key].toLocaleString()}` : '—')
+                      : profile[key] || <span className="text-gray-300 font-normal">Not set</span>}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {!isAdmin && (
-        <p className="text-xs text-gray-400 mt-3">
-          You can update phone, address, and profile picture. Contact HR to change other details.
+        <p className="text-xs text-gray-400 px-1">
+          You can update phone, address, job role, and profile photo. Contact HR to change other details.
         </p>
       )}
     </div>

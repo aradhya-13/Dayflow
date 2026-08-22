@@ -1,13 +1,3 @@
-/**
- * Navbar — drop this into any page by wrapping with PrivateRoute in App.jsx.
- * It already appears on all protected pages via the layout in App.jsx.
- *
- * Role-based nav:
- *   - Both roles: Profile
- *   - Employee only: Dashboard, Attendance*, Leave Requests*, Payroll*
- *   - Admin only: Admin Dashboard, All Employees
- *   (* placeholder links — teammates fill these in)
- */
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -18,69 +8,89 @@ export default function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleSignout = () => {
-    signout();
-    navigate('/signin');
-  };
+  const handleSignout = () => { signout(); navigate('/signin'); };
 
-  const isActive = (path) =>
-    location.pathname === path ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600';
+  const isActive = (path) => location.pathname === path;
 
   const employeeLinks = [
-    { to: '/dashboard', label: 'Dashboard' },
-    { to: '/attendance', label: 'Attendance' },
-    { to: '/leaves', label: 'Leave Requests' },
-    { to: '/payroll', label: 'Payroll' },
+    { to: '/dashboard', label: 'Dashboard', icon: '⊞' },
+    { to: '/attendance', label: 'Attendance', icon: '◷' },
+    { to: '/leaves', label: 'Leave', icon: '◈' },
+    { to: '/payroll', label: 'Payroll', icon: '◎' },
   ];
 
   const adminLinks = [
-    { to: '/admin', label: 'Admin Dashboard' },
-    { to: '/attendance', label: 'Attendance' },
-    { to: '/leaves', label: 'Leave Approvals' },
+    { to: '/admin', label: 'Dashboard', icon: '⊞' },
+    { to: '/attendance', label: 'Attendance', icon: '◷' },
+    { to: '/leaves', label: 'Approvals', icon: '◈' },
   ];
 
   const links = user?.role === 'admin' ? adminLinks : employeeLinks;
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '??';
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+
         {/* Logo */}
-        <Link to="/dashboard" className="text-blue-600 font-bold text-xl tracking-tight">
-          Dayflow
+        <Link to="/dashboard" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+            <span className="text-white text-xs font-bold">DF</span>
+          </div>
+          <span className="font-bold text-gray-900 text-lg tracking-tight group-hover:text-blue-600 transition-colors">
+            Dayflow
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6 text-sm">
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-1">
           {links.map(({ to, label }) => (
-            <Link key={to} to={to} className={isActive(to)}>
+            <Link
+              key={to}
+              to={to}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                isActive(to)
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
               {label}
             </Link>
           ))}
-          <Link to="/profile" className={isActive('/profile')}>
+          <Link
+            to="/profile"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive('/profile')
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
             Profile
           </Link>
         </div>
 
-        {/* User info + signout */}
+        {/* User + signout */}
         <div className="hidden md:flex items-center gap-3">
-          <span className="text-sm text-gray-500">
-            {user?.name} <span className="text-xs bg-gray-100 rounded px-1">{user?.role}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            user?.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+          }`}>
+            {user?.role}
           </span>
-          <button
-            onClick={handleSignout}
-            className="text-sm text-red-500 hover:text-red-700 transition"
-          >
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+            {initials}
+          </div>
+          <button onClick={handleSignout} className="text-sm text-gray-400 hover:text-red-500 transition-colors">
             Sign out
           </button>
         </div>
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden text-gray-600"
-          onClick={() => setMenuOpen((o) => !o)}
+          className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          onClick={() => setMenuOpen(o => !o)}
           aria-label="Toggle menu"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d={menuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
           </svg>
@@ -89,16 +99,20 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden px-4 pb-4 flex flex-col gap-3 text-sm border-t border-gray-100 pt-3">
-          {links.map(({ to, label }) => (
-            <Link key={to} to={to} className={isActive(to)} onClick={() => setMenuOpen(false)}>
+        <div className="md:hidden px-4 pb-4 pt-2 flex flex-col gap-1 border-t border-gray-100 bg-white">
+          {[...links, { to: '/profile', label: 'Profile' }].map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setMenuOpen(false)}
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive(to) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
               {label}
             </Link>
           ))}
-          <Link to="/profile" className={isActive('/profile')} onClick={() => setMenuOpen(false)}>
-            Profile
-          </Link>
-          <button onClick={handleSignout} className="text-left text-red-500 hover:text-red-700">
+          <button onClick={handleSignout} className="text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors">
             Sign out
           </button>
         </div>
