@@ -6,26 +6,28 @@ A full-stack HRMS built during a hackathon. Manages employees, attendance, leave
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
+| Layer    | Technology                  |
+| -------- | --------------------------- |
 | Frontend | React (Vite) + Tailwind CSS |
-| Backend | Node.js + Express |
-| Database | MongoDB Atlas |
-| Auth | JWT (role-based) |
-| Charts | Recharts |
-| PDF | jsPDF + jspdf-autotable |
+| Backend  | Node.js + Express           |
+| Database | MongoDB Atlas               |
+| Auth     | JWT (role-based)            |
+| Charts   | Recharts                    |
+| PDF      | jsPDF + jspdf-autotable     |
 
 ---
 
 ## Features
 
 ### Auth
+
 - Sign up with employee ID, email, password, role (admin/employee)
 - Password strength validation (8+ chars, uppercase, number, special char)
 - JWT issued on sign in, stored in localStorage
 - Protected routes — auto-redirect to sign in on token expiry
 
 ### Employee
+
 - Dashboard with quick-access cards, live attendance & leave widgets, pie charts
 - Attendance — check in / check out, view history
 - Leave Requests — apply for sick/casual/annual leave, view balance (12/6/6 days), status tracking
@@ -33,6 +35,7 @@ A full-stack HRMS built during a hackathon. Manages employees, attendance, leave
 - Profile — view all info, edit phone, address, profile picture
 
 ### Admin
+
 - Dashboard with live stats (total employees, pending leaves, present/absent today)
 - Analytics charts — leaves by department, attendance trend (7 days), payroll cost by department
 - Employee list table
@@ -74,10 +77,12 @@ dayflow/
 
 ---
 
-## Live Demo
+## Demo Video
 
-https://dayflow-2-2g82.onrender.com/signin
----
+<video src=".\demo_video.mp4" controls="controls" width="100%">
+  Your browser does not support the video tag.
+</video>
+----
 
 ## Getting Started
 
@@ -137,13 +142,13 @@ Open **http://localhost:5173**
 
 ## Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | shubhamdtasagave@gmail.com | Admin@1234 |
-| Admin | Asha@gmail.com | Admin@1234 |
-| Admin | aradhya@gmail.com | Admin@1234 |
-| Employee | priya@dayflow.in | Employee@1234 |
-| Employee | arjun@dayflow.in | Employee@1234 |
+| Role     | Email                      | Password      |
+| -------- | -------------------------- | ------------- |
+| Admin    | shubhamdtasagave@gmail.com | Admin@1234    |
+| Admin    | Asha@gmail.com             | Admin@1234    |
+| Admin    | aradhya@gmail.com          | Admin@1234    |
+| Employee | priya@dayflow.in           | Employee@1234 |
+| Employee | arjun@dayflow.in           | Employee@1234 |
 
 ---
 
@@ -151,30 +156,30 @@ Open **http://localhost:5173**
 
 All responses follow `{ success: true/false, data, message }`.
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | /api/auth/signup | — | Register |
-| POST | /api/auth/signin | — | Login |
-| GET | /api/users/me | employee+ | Own profile |
-| PUT | /api/users/me | employee+ | Update own profile |
-| GET | /api/users | admin | List all employees |
-| PUT | /api/users/:id | admin | Edit any employee |
-| POST | /api/attendance/checkin | employee+ | Check in |
-| POST | /api/attendance/checkout | employee+ | Check out |
-| GET | /api/attendance/me | employee+ | Own attendance |
-| GET | /api/attendance | admin | All attendance |
-| POST | /api/leaves | employee+ | Apply for leave |
-| GET | /api/leaves/me | employee+ | Own leave requests |
-| GET | /api/leaves/balance | employee+ | Leave balance |
-| GET | /api/leaves | admin | All leave requests |
-| PUT | /api/leaves/:id/approve | admin | Approve leave |
-| PUT | /api/leaves/:id/reject | admin | Reject leave |
-| POST | /api/payroll/generate | admin | Generate payslip |
-| GET | /api/payroll/me | employee+ | Own payslips |
-| GET | /api/payroll | admin | All payslips |
-| PUT | /api/payroll/:id/issue | admin | Issue payslip |
-| GET | /api/admin/stats | admin | Dashboard stats |
-| GET | /api/admin/analytics | admin | Charts data |
+| Method | Endpoint                 | Auth      | Description        |
+| ------ | ------------------------ | --------- | ------------------ |
+| POST   | /api/auth/signup         | —         | Register           |
+| POST   | /api/auth/signin         | —         | Login              |
+| GET    | /api/users/me            | employee+ | Own profile        |
+| PUT    | /api/users/me            | employee+ | Update own profile |
+| GET    | /api/users               | admin     | List all employees |
+| PUT    | /api/users/:id           | admin     | Edit any employee  |
+| POST   | /api/attendance/checkin  | employee+ | Check in           |
+| POST   | /api/attendance/checkout | employee+ | Check out          |
+| GET    | /api/attendance/me       | employee+ | Own attendance     |
+| GET    | /api/attendance          | admin     | All attendance     |
+| POST   | /api/leaves              | employee+ | Apply for leave    |
+| GET    | /api/leaves/me           | employee+ | Own leave requests |
+| GET    | /api/leaves/balance      | employee+ | Leave balance      |
+| GET    | /api/leaves              | admin     | All leave requests |
+| PUT    | /api/leaves/:id/approve  | admin     | Approve leave      |
+| PUT    | /api/leaves/:id/reject   | admin     | Reject leave       |
+| POST   | /api/payroll/generate    | admin     | Generate payslip   |
+| GET    | /api/payroll/me          | employee+ | Own payslips       |
+| GET    | /api/payroll             | admin     | All payslips       |
+| PUT    | /api/payroll/:id/issue   | admin     | Issue payslip      |
+| GET    | /api/admin/stats         | admin     | Dashboard stats    |
+| GET    | /api/admin/analytics     | admin     | Charts data        |
 
 ---
 
@@ -191,11 +196,11 @@ Auth token is attached automatically. No extra setup needed.
 
 ## Leave Balance Defaults
 
-| Type | Default Days |
-|------|-------------|
-| Sick | 6 days |
-| Casual | 6 days |
-| Annual (Paid) | 12 days |
+| Type          | Default Days |
+| ------------- | ------------ |
+| Sick          | 6 days       |
+| Casual        | 6 days       |
+| Annual (Paid) | 12 days      |
 
 Balances are stored per user and deducted when admin approves a leave request. Approval is blocked if balance is insufficient.
 
