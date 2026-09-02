@@ -77,12 +77,9 @@ dayflow/
 
 ---
 
-## Demo Video
+## 🎥 Demo Video
 
-<video src=".\demo_video.mp4" controls="controls" width="100%">
-  Your browser does not support the video tag.
-</video>
-----
+## ▶️ **[Watch the Dayflow Demo Video](./demo_video.mp4)**
 
 ## Getting Started
 
