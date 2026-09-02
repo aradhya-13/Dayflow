@@ -79,7 +79,7 @@ dayflow/
 
 ## 🎥 Demo Video
 
-## ▶️ **[Watch the Dayflow Demo Video](./demo_video.mp4)**
+[▶️ Watch the Dayflow HRMS Demo Video](./demo_video.mp4)
 
 ## Getting Started
 
